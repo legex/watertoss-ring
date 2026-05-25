@@ -1,0 +1,41 @@
+{
+  "name": "Waterful Ring Toss",
+  "short_name": "WaterToss",
+  "description": "Press water jets to propel rings onto pegs. Master all 30 levels and top the leaderboard!",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#00b4d8",
+  "background_color": "#020c1b",
+  "categories": ["games"],
+  "icons": [
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Play",
+      "short_name": "Play",
+      "url": "/game",
+      "description": "Jump straight into the game"
+    },
+    {
+      "name": "Leaderboard",
+      "short_name": "Scores",
+      "url": "/leaderboard",
+      "description": "View top scores"
+    }
+  ]
+}

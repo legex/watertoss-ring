@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Play — Waterful Ring Toss{% endblock %}
+
+{% block content %}
+<div class="game-layout">
+
+  <!-- Sidebar -->
+  <aside class="game-sidebar">
+    <div class="info-card">
+      <div class="label">Score</div>
+      <div class="value score-val" id="scoreVal">0</div>
+    </div>
+
+    <div class="info-card">
+      <div class="label">Level</div>
+      <div class="value level-val" id="levelVal">1</div>
+    </div>
+
+    <div class="info-card">
+      <div class="label">Time</div>
+      <div class="value" id="timerVal">60s</div>
+      <div class="timer-bar-wrap">
+        <div class="timer-bar" id="timerBar" style="width:100%"></div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="label">Rings</div>
+      <div class="value" id="ringsVal" style="font-size:1.1rem;">0 / 0</div>
+      <div class="ring-progress" id="ringDots"></div>
+    </div>
+
+    <div class="info-card">
+      <div class="label" style="margin-bottom:10px;">Levels</div>
+      <div class="level-list">
+        {% for i in range(1, 31) %}
+        <div class="level-item" id="lvl-item-{{ i }}">
+          <span class="lv-num">{{ i }}</span>
+          <span>Level {{ i }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Canvas area -->
+  <div class="canvas-wrap">
+    <!-- Wall jets flank the canvas -->
+    <div class="canvas-with-walls">
+      <button class="wall-jet-btn" id="btnWallLeft"  title="Push left (Q / Z)">◀<br>PUSH</button>
+      <div class="canvas-relative">
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- Level complete overlay -->
+      <div class="overlay" id="levelEndOverlay">
+        <h2 id="lvlEndTitle" style="color:var(--green);">Level Complete!</h2>
+        <div class="big-score" id="lvlEndScore">+0</div>
+        <p id="lvlEndRings">0 / 0 rings</p>
+        <p id="lvlEndTime" style="margin-bottom:20px;">Time left: 0s</p>
+        <div style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">Total: <span id="totalScoreDisplay" style="color:var(--accent);font-weight:700;">0</span></div>
+        <button class="btn btn-primary" id="btnNextLevel">Next Level →</button>
+      </div>
+
+      <!-- Game over overlay -->
+      <div class="overlay" id="gameOverOverlay">
+        <h2 id="goTitle">Game Over</h2>
+        <div class="big-score" id="goScore">0</div>
+        <p id="goLevel" style="color:var(--water-light);">Level 1</p>
+        <p id="goRings" style="margin-bottom:20px;">0 / 0 rings</p>
+        <input type="text" id="goName" maxlength="20" placeholder="Your name…"
+               style="width:220px;padding:10px 14px;border-radius:10px;border:2px solid var(--water-dark);background:var(--bg);color:var(--text);font-size:1rem;margin-bottom:14px;text-align:center;outline:none;"/>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-accent" id="btnSubmitScore">Save Score</button>
+          <button class="btn btn-ghost" id="btnRestart">Play Again</button>
+        </div>
+      </div>
+      </div><!-- canvas-relative -->
+      <button class="wall-jet-btn" id="btnWallRight" title="Push right (E / X)">PUSH<br>▶</button>
+    </div><!-- canvas-with-walls -->
+
+    <!-- Bottom up-jets -->
+    <div class="btn-row">
+      <button class="jet-btn jet-left"  id="btnLeft"  title="Left up-jet (A / ←)">LEFT<br>JET ↑</button>
+      <button class="jet-btn jet-right" id="btnRight" title="Right up-jet (D / →)">RIGHT<br>JET ↑</button>
+    </div>
+
+    <div class="controls-hint">
+      <kbd>A</kbd>/<kbd>←</kbd> &amp; <kbd>D</kbd>/<kbd>→</kbd> — lift &nbsp;|&nbsp;
+      <kbd>Q</kbd>/<kbd>Z</kbd> &amp; <kbd>E</kbd>/<kbd>X</kbd> — steer ◀▶
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Pre-fill name from session
+  const savedName = sessionStorage.getItem('playerName') || '';
+  if (savedName) document.getElementById('goName').value = savedName;
+</script>
+<script src="/static/js/game.js"></script>
+{% endblock %}

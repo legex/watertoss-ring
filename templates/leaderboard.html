@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — Waterful Ring Toss{% endblock %}
+
+{% block content %}
+<div class="lb-page">
+  <h1>🏆 Leaderboard</h1>
+
+  {% if scores %}
+  <table class="score-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>Score</th>
+        <th>Level</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in scores %}
+      <tr>
+        <td><span class="rank-badge rank-{{ loop.index if loop.index <= 3 else '' }}">{{ loop.index }}</span></td>
+        <td style="font-weight:{% if loop.index == 1 %}700{% else %}400{% endif %};">
+          {% if loop.index == 1 %}👑 {% endif %}{{ s.player_name }}
+        </td>
+        <td style="color:var(--accent);font-weight:700;">{{ '{:,}'.format(s.score) }}</td>
+        <td><span class="lv-badge" style="{% if s.level_reached == 10 %}background:var(--accent);color:#111;{% endif %}">
+          {% if s.level_reached == 10 %}★{% endif %} Lv {{ s.level_reached }}
+        </span></td>
+        <td style="color:var(--muted);font-size:0.82rem;">{{ s.created_at[:10] if s.created_at else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center;padding:60px 0;color:var(--muted);">
+    <div style="font-size:3rem;margin-bottom:16px;">🎯</div>
+    <p>No scores yet — be the first to play!</p>
+  </div>
+  {% endif %}
+
+  <div style="text-align:center;margin-top:32px;">
+    <a class="btn btn-primary" href="/game">Play Now</a>
+  </div>
+</div>
+{% endblock %}

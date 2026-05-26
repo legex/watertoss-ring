@@ -13,24 +13,27 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link rel="stylesheet" href="css/style.css"/>
   <style>
-    /* On game page: nav is hidden, so handle safe-area inset on the layout itself */
     .game-layout { padding-top: max(10px, env(safe-area-inset-top)); }
+    .replay-badge {
+      display: none;
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #111;
+      padding: 3px 14px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em;
+      z-index: 5; pointer-events: none;
+    }
+    .level-item.replay-able { cursor: pointer; opacity: 0.85; }
+    .level-item.replay-able:hover { opacity: 1; background: rgba(0,180,216,0.10); }
   </style>
 </head>
 <body>
   <div class="bubble-layer" aria-hidden="true">
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
-    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
+    <div class="bg-bubble"></div><div class="bg-bubble"></div>
   </div>
 
   <div class="game-layout">
@@ -61,57 +64,41 @@
       </div>
 
       <div class="info-card">
+        <div class="label">Lives</div>
+        <div id="livesVal" style="font-size:1.3rem;letter-spacing:3px;margin-top:6px;">❤️❤️❤️🖤🖤</div>
+      </div>
+
+      <div class="info-card">
         <div class="label" style="margin-bottom:10px;">Levels</div>
-        <div class="level-list">
-          <div class="level-item" id="lvl-item-1"><span class="lv-num">1</span><span>Level 1</span></div>
-          <div class="level-item" id="lvl-item-2"><span class="lv-num">2</span><span>Level 2</span></div>
-          <div class="level-item" id="lvl-item-3"><span class="lv-num">3</span><span>Level 3</span></div>
-          <div class="level-item" id="lvl-item-4"><span class="lv-num">4</span><span>Level 4</span></div>
-          <div class="level-item" id="lvl-item-5"><span class="lv-num">5</span><span>Level 5</span></div>
-          <div class="level-item" id="lvl-item-6"><span class="lv-num">6</span><span>Level 6</span></div>
-          <div class="level-item" id="lvl-item-7"><span class="lv-num">7</span><span>Level 7</span></div>
-          <div class="level-item" id="lvl-item-8"><span class="lv-num">8</span><span>Level 8</span></div>
-          <div class="level-item" id="lvl-item-9"><span class="lv-num">9</span><span>Level 9</span></div>
-          <div class="level-item" id="lvl-item-10"><span class="lv-num">10</span><span>Level 10</span></div>
-          <div class="level-item" id="lvl-item-11"><span class="lv-num">11</span><span>Level 11</span></div>
-          <div class="level-item" id="lvl-item-12"><span class="lv-num">12</span><span>Level 12</span></div>
-          <div class="level-item" id="lvl-item-13"><span class="lv-num">13</span><span>Level 13</span></div>
-          <div class="level-item" id="lvl-item-14"><span class="lv-num">14</span><span>Level 14</span></div>
-          <div class="level-item" id="lvl-item-15"><span class="lv-num">15</span><span>Level 15</span></div>
-          <div class="level-item" id="lvl-item-16"><span class="lv-num">16</span><span>Level 16</span></div>
-          <div class="level-item" id="lvl-item-17"><span class="lv-num">17</span><span>Level 17</span></div>
-          <div class="level-item" id="lvl-item-18"><span class="lv-num">18</span><span>Level 18</span></div>
-          <div class="level-item" id="lvl-item-19"><span class="lv-num">19</span><span>Level 19</span></div>
-          <div class="level-item" id="lvl-item-20"><span class="lv-num">20</span><span>Level 20</span></div>
-          <div class="level-item" id="lvl-item-21"><span class="lv-num">21</span><span>Level 21</span></div>
-          <div class="level-item" id="lvl-item-22"><span class="lv-num">22</span><span>Level 22</span></div>
-          <div class="level-item" id="lvl-item-23"><span class="lv-num">23</span><span>Level 23</span></div>
-          <div class="level-item" id="lvl-item-24"><span class="lv-num">24</span><span>Level 24</span></div>
-          <div class="level-item" id="lvl-item-25"><span class="lv-num">25</span><span>Level 25</span></div>
-          <div class="level-item" id="lvl-item-26"><span class="lv-num">26</span><span>Level 26</span></div>
-          <div class="level-item" id="lvl-item-27"><span class="lv-num">27</span><span>Level 27</span></div>
-          <div class="level-item" id="lvl-item-28"><span class="lv-num">28</span><span>Level 28</span></div>
-          <div class="level-item" id="lvl-item-29"><span class="lv-num">29</span><span>Level 29</span></div>
-          <div class="level-item" id="lvl-item-30"><span class="lv-num">30</span><span>Level 30</span></div>
-        </div>
+        <!-- Populated dynamically by buildLevelList() in game.js -->
+        <div class="level-list" id="levelList"></div>
       </div>
     </aside>
 
     <div class="canvas-wrap">
       <div class="canvas-with-walls">
         <button class="wall-jet-btn" id="btnWallLeft" title="Push left (Q / Z)">◀<br>PUSH</button>
+
         <div class="canvas-relative">
           <canvas id="gameCanvas"></canvas>
 
+          <!-- Replay mode indicator -->
+          <div class="replay-badge" id="replayBadge">🎮 REPLAY</div>
+
+          <!-- Level complete overlay -->
           <div class="overlay" id="levelEndOverlay">
             <h2 id="lvlEndTitle" style="color:var(--green);">Level Complete!</h2>
             <div class="big-score" id="lvlEndScore">+0</div>
             <p id="lvlEndRings">0 / 0 rings</p>
             <p id="lvlEndTime" style="margin-bottom:20px;">Time left: 0s</p>
             <div style="color:var(--muted);font-size:0.85rem;margin-bottom:16px;">Total: <span id="totalScoreDisplay" style="color:var(--accent);font-weight:700;">0</span></div>
-            <button class="btn btn-primary" id="btnNextLevel">Next Level →</button>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="btnNextLevel">Next Level →</button>
+              <button class="btn btn-ghost"   id="btnExitReplay" style="display:none;">← Campaign</button>
+            </div>
           </div>
 
+          <!-- Game over overlay (victory or give-up) -->
           <div class="overlay" id="gameOverOverlay">
             <h2 id="goTitle">Game Over</h2>
             <div class="big-score" id="goScore">0</div>
@@ -121,12 +108,43 @@
                    style="width:220px;padding:10px 14px;border-radius:10px;border:2px solid var(--water-dark);background:var(--bg);color:var(--text);font-size:1rem;margin-bottom:14px;text-align:center;outline:none;"/>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
               <button class="btn btn-accent" id="btnSubmitScore">Save Score</button>
-              <button class="btn btn-ghost" id="btnRestart">Play Again</button>
+              <button class="btn btn-ghost"  id="btnRestart">Play Again</button>
+              <button class="btn btn-ghost"  id="btnCampaign" style="display:none;">← Campaign</button>
             </div>
           </div>
-        </div>
+
+          <!-- Retry overlay: failed level but lives remain -->
+          <div class="overlay" id="retryOverlay">
+            <h2 style="color:var(--red);">⏰ Time Up!</h2>
+            <div id="retryLives" style="font-size:1.5rem;letter-spacing:4px;margin:14px 0;"></div>
+            <p id="retryMsg" style="color:var(--muted);margin-bottom:8px;"></p>
+            <p style="color:var(--accent);font-weight:700;margin-bottom:20px;">Score: <span id="retryScore">0</span></p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="btnTryAgain">🔄 Try Again</button>
+              <button class="btn btn-ghost"   id="btnGiveUp">🏳 Give Up</button>
+            </div>
+          </div>
+
+          <!-- No lives overlay -->
+          <div class="overlay" id="noLivesOverlay">
+            <h2 style="color:var(--red);">💔 No Lives Left!</h2>
+            <div style="font-size:1.5rem;letter-spacing:4px;margin:14px 0;">🖤🖤🖤🖤🖤</div>
+            <p style="margin-bottom:4px;">Watch a short ad to continue<br>from <strong>Level <span id="noLivesLevel">1</span></strong></p>
+            <p style="color:var(--muted);font-size:0.82rem;margin-bottom:22px;">Lives refill 1 every 15 min if you wait</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+              <button class="btn btn-accent" id="btnWatchAd" style="min-width:130px;line-height:1.5;">
+                ▶ Watch Ad<br><small style="font-weight:400;opacity:0.85;">Get 1 Life &amp; Continue</small>
+              </button>
+              <button class="btn btn-ghost" id="btnStartOver" style="min-width:130px;line-height:1.5;">
+                🔄 Start Over<br><small style="font-weight:400;opacity:0.85;">3 Fresh Lives</small>
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /canvas-relative -->
+
         <button class="wall-jet-btn" id="btnWallRight" title="Push right (E / X)">PUSH<br>▶</button>
-      </div>
+      </div><!-- /canvas-with-walls -->
 
       <div class="btn-row">
         <button class="jet-btn jet-left"  id="btnLeft"  title="Left up-jet (A / ←)">LEFT<br>JET ↑</button>
@@ -137,18 +155,18 @@
         <kbd>A</kbd>/<kbd>←</kbd> &amp; <kbd>D</kbd>/<kbd>→</kbd> — lift &nbsp;|&nbsp;
         <kbd>Q</kbd>/<kbd>Z</kbd> &amp; <kbd>E</kbd>/<kbd>X</kbd> — steer ◀▶
       </div>
-    </div>
+    </div><!-- /canvas-wrap -->
 
-  </div>
+  </div><!-- /game-layout -->
 
   <div id="toast" class="toast"></div>
 
   <script src="config.js"></script>
+  <script src="js/ads.js"></script>
   <script>
     const savedName = sessionStorage.getItem('playerName') || '';
     if (savedName) document.getElementById('goName').value = savedName;
 
-    // Hide status bar for immersive game view on Android
     document.addEventListener('DOMContentLoaded', async () => {
       if (window.Capacitor?.isNativePlatform()) {
         const { StatusBar } = window.Capacitor.Plugins;

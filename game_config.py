@@ -47,21 +47,41 @@ LEVELS = {
     25: {"pegs": 8, "rings": 16, "time": 32, "peg_moving": True,  "water_power": 0.88, "ring_drift": 0.055, "points_per_ring": 630, "restricted_pegs": 8, "colors_per_peg": 1},
 
     # ── Phase 9 · Maximum difficulty (26–30) ──────────────────────────────────
-    26: {"pegs": 8, "rings": 17, "time": 30, "peg_moving": True,  "water_power": 0.90, "ring_drift": 0.058, "points_per_ring": 675, "restricted_pegs": 8, "colors_per_peg": 1},
-    27: {"pegs": 8, "rings": 18, "time": 28, "peg_moving": True,  "water_power": 0.92, "ring_drift": 0.061, "points_per_ring": 720, "restricted_pegs": 8, "colors_per_peg": 1},
-    28: {"pegs": 8, "rings": 19, "time": 26, "peg_moving": True,  "water_power": 0.94, "ring_drift": 0.064, "points_per_ring": 770, "restricted_pegs": 8, "colors_per_peg": 1},
-    29: {"pegs": 8, "rings": 20, "time": 24, "peg_moving": True,  "water_power": 0.97, "ring_drift": 0.067, "points_per_ring": 825, "restricted_pegs": 8, "colors_per_peg": 1},
-    30: {"pegs": 8, "rings": 20, "time": 22, "peg_moving": True,  "water_power": 1.00, "ring_drift": 0.070, "points_per_ring": 900, "restricted_pegs": 8, "colors_per_peg": 1},
+    26: {"pegs": 8, "rings": 17, "time": 45, "peg_moving": True,  "water_power": 0.90, "ring_drift": 0.058, "points_per_ring": 675, "restricted_pegs": 8, "colors_per_peg": 1},
+    27: {"pegs": 8, "rings": 18, "time": 42, "peg_moving": True,  "water_power": 0.92, "ring_drift": 0.061, "points_per_ring": 720, "restricted_pegs": 8, "colors_per_peg": 1},
+    28: {"pegs": 8, "rings": 19, "time": 39, "peg_moving": True,  "water_power": 0.94, "ring_drift": 0.064, "points_per_ring": 770, "restricted_pegs": 8, "colors_per_peg": 1},
+    29: {"pegs": 8, "rings": 20, "time": 36, "peg_moving": True,  "water_power": 0.97, "ring_drift": 0.067, "points_per_ring": 825, "restricted_pegs": 8, "colors_per_peg": 1},
+    30: {"pegs": 8, "rings": 20, "time": 33, "peg_moving": True,  "water_power": 1.00, "ring_drift": 0.070, "points_per_ring": 900, "restricted_pegs": 8, "colors_per_peg": 1},
 }
 
-MAX_LEVEL = 30
+
+def _gen(n: int) -> dict:
+    """Smooth progression formula for levels 31-100."""
+    t = (n - 31) / 69.0  # 0.0 at level 31, 1.0 at level 100
+    return {
+        "pegs":            8,
+        "rings":           min(25, round(20 + t * 5)),
+        "time":            max(20, round(33 - t * 13)),
+        "peg_moving":      True,
+        "water_power":     round(1.00 + t * 0.18, 3),
+        "ring_drift":      round(0.070 + t * 0.022, 4),
+        "points_per_ring": round(900 + t * 700),
+        "restricted_pegs": 8,
+        "colors_per_peg":  1,
+    }
+
+
+for _n in range(31, 101):
+    LEVELS[_n] = _gen(_n)
+
+MAX_LEVEL = 100
 
 TIME_BONUS_MULTIPLIER = 5
 PERFECT_CLEAR_BONUS   = 500
 
 
 def calculate_score(level: int, rings_scored: int, rings_total: int, time_remaining: float) -> int:
-    cfg   = LEVELS.get(level, LEVELS[30])
+    cfg   = LEVELS.get(level, LEVELS[100])
     base  = rings_scored * cfg["points_per_ring"]
     time_bonus = int(time_remaining * TIME_BONUS_MULTIPLIER)
     perfect    = PERFECT_CLEAR_BONUS if rings_scored == rings_total else 0

@@ -12,6 +12,33 @@
   <meta name="apple-mobile-web-app-title" content="WaterToss"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .lb-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .lb-tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 2px solid var(--water-dark);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lb-tab.active {
+      background: linear-gradient(135deg, var(--water-mid), var(--water-dark));
+      border-color: var(--water-mid);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,180,216,0.35);
+    }
+    .lb-panel { display: none; }
+    .lb-panel.active { display: block; }
+  </style>
 </head>
 <body>
   <div class="bubble-layer" aria-hidden="true">
@@ -41,10 +68,22 @@
   <div class="lb-page">
     <h1>🏆 Leaderboard</h1>
 
-    <div id="lbContent">
+    <div class="lb-tabs">
+      <button class="lb-tab active" id="tabLocal" onclick="switchTab('local')">🏠 Local</button>
+      <button class="lb-tab"        id="tabGlobal" onclick="switchTab('global')">🌍 Global</button>
+    </div>
+
+    <div class="lb-panel active" id="panelLocal">
       <div style="text-align:center;padding:60px 0;color:var(--muted);">
         <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
-        <p>Loading scores…</p>
+        <p>Loading…</p>
+      </div>
+    </div>
+
+    <div class="lb-panel" id="panelGlobal">
+      <div style="text-align:center;padding:60px 0;color:var(--muted);">
+        <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+        <p>Loading…</p>
       </div>
     </div>
 
@@ -70,49 +109,68 @@
       }
     });
 
-    fetch(API_BASE + '/api/scores')
-      .then(r => r.json())
-      .then(data => {
-        const scores = data.scores || [];
-        if (!scores.length) {
-          document.getElementById('lbContent').innerHTML = `
+    function buildTable(scores) {
+      if (!scores.length) return `
+        <div style="text-align:center;padding:60px 0;color:var(--muted);">
+          <div style="font-size:3rem;margin-bottom:16px;">🎯</div>
+          <p>No scores yet — be the first to play!</p>
+        </div>`;
+      return `
+        <table class="score-table">
+          <thead>
+            <tr><th>#</th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            ${scores.map((s, i) => {
+              const rank = i + 1;
+              const rankClass = rank <= 3 ? `rank-${rank}` : '';
+              const crown = rank === 1 ? '👑 ' : '';
+              const bold = rank === 1 ? 'font-weight:700;' : '';
+              const maxStyle = s.level_reached === 100 ? 'background:var(--accent);color:#111;' : '';
+              const star = s.level_reached === 100 ? '★ ' : '';
+              return `<tr>
+                <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                <td style="${bold}">${crown}${s.player_name}</td>
+                <td style="color:var(--accent);font-weight:700;">${s.score.toLocaleString()}</td>
+                <td><span class="lv-badge" style="${maxStyle}">${star}Lv ${s.level_reached}</span></td>
+                <td style="color:var(--muted);font-size:0.82rem;">${s.created_at ? s.created_at.slice(0, 10) : '—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // Load local scores from localStorage
+    function loadLocal() {
+      const scores = JSON.parse(localStorage.getItem('watertoss_scores') || '[]');
+      document.getElementById('panelLocal').innerHTML = buildTable(scores);
+    }
+
+    // Load global scores from Railway
+    function loadGlobal() {
+      const panel = document.getElementById('panelGlobal');
+      fetch(API_BASE + '/api/scores')
+        .then(r => r.json())
+        .then(data => { panel.innerHTML = buildTable(data.scores || []); })
+        .catch(() => {
+          panel.innerHTML = `
             <div style="text-align:center;padding:60px 0;color:var(--muted);">
-              <div style="font-size:3rem;margin-bottom:16px;">🎯</div>
-              <p>No scores yet — be the first to play!</p>
+              <div style="font-size:3rem;margin-bottom:16px;">📡</div>
+              <p>Could not load scores — check your connection.</p>
             </div>`;
-          return;
-        }
-        document.getElementById('lbContent').innerHTML = `
-          <table class="score-table">
-            <thead>
-              <tr><th>#</th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr>
-            </thead>
-            <tbody>
-              ${scores.map((s, i) => {
-                const rank = i + 1;
-                const rankClass = rank <= 3 ? `rank-${rank}` : '';
-                const crown = rank === 1 ? '👑 ' : '';
-                const bold = rank === 1 ? 'font-weight:700;' : '';
-                const maxStyle = s.level_reached === 30 ? 'background:var(--accent);color:#111;' : '';
-                const star = s.level_reached === 30 ? '★ ' : '';
-                return `<tr>
-                  <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-                  <td style="${bold}">${crown}${s.player_name}</td>
-                  <td style="color:var(--accent);font-weight:700;">${s.score.toLocaleString()}</td>
-                  <td><span class="lv-badge" style="${maxStyle}">${star}Lv ${s.level_reached}</span></td>
-                  <td style="color:var(--muted);font-size:0.82rem;">${s.created_at ? s.created_at.slice(0, 10) : '—'}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>`;
-      })
-      .catch(() => {
-        document.getElementById('lbContent').innerHTML = `
-          <div style="text-align:center;padding:60px 0;color:var(--muted);">
-            <div style="font-size:3rem;margin-bottom:16px;">📡</div>
-            <p>Could not load scores — check your connection.</p>
-          </div>`;
-      });
+        });
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tabLocal').classList.toggle('active', tab === 'local');
+      document.getElementById('tabGlobal').classList.toggle('active', tab === 'global');
+      document.getElementById('panelLocal').classList.toggle('active', tab === 'local');
+      document.getElementById('panelGlobal').classList.toggle('active', tab === 'global');
+    }
+
+    // Load both on page load
+    loadLocal();
+    loadGlobal();
   </script>
 </body>
 </html>

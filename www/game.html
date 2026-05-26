@@ -73,12 +73,13 @@
         <!-- Populated dynamically by buildLevelList() in game.js -->
         <div class="level-list" id="levelList"></div>
       </div>
+
+      <button class="settings-btn" id="btnSettings" title="Settings">⚙️</button>
     </aside>
 
     <div class="canvas-wrap">
-      <div class="canvas-with-walls">
-        <button class="wall-jet-btn" id="btnWallLeft" title="Push left (Q / Z)">◀<br>PUSH</button>
-
+      <div class="canvas-with-walls" id="canvasWithWalls">
+        <button class="wall-jet-btn gyro-hidden" id="btnWallLeft" title="Push left (Q / Z)">◀<br>PUSH</button>
         <div class="canvas-relative">
           <canvas id="gameCanvas"></canvas>
 
@@ -142,13 +143,17 @@
           </div>
 
         </div><!-- /canvas-relative -->
-
-        <button class="wall-jet-btn" id="btnWallRight" title="Push right (E / X)">PUSH<br>▶</button>
+        <button class="wall-jet-btn gyro-hidden" id="btnWallRight" title="Push right (E / X)">PUSH<br>▶</button>
       </div><!-- /canvas-with-walls -->
 
       <div class="btn-row">
         <button class="jet-btn jet-left"  id="btnLeft"  title="Left up-jet (A / ←)">LEFT<br>JET ↑</button>
         <button class="jet-btn jet-right" id="btnRight" title="Right up-jet (D / →)">RIGHT<br>JET ↑</button>
+      </div>
+
+      <div class="tilt-indicator" id="tiltIndicator">
+        <div class="tilt-bar"><div class="tilt-thumb" id="tiltThumb"></div></div>
+        <span>Tilt phone to steer</span>
       </div>
 
       <div class="controls-hint">
@@ -161,8 +166,34 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- Settings modal -->
+  <div class="settings-modal-bg" id="settingsBg" onclick="closeSettings()">
+    <div class="settings-modal" onclick="event.stopPropagation()">
+      <h3 style="margin:0 0 20px;color:var(--water-light);">⚙️ Settings</h3>
+
+      <div class="setting-row">
+        <span>🎵 Music</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="settingMusic">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span>🔔 Sound FX</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="settingSfx">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:24px;width:100%;" onclick="closeSettings()">Done</button>
+    </div>
+  </div>
+
   <script src="config.js"></script>
   <script src="js/ads.js"></script>
+  <script src="js/audio.js"></script>
   <script>
     const savedName = sessionStorage.getItem('playerName') || '';
     if (savedName) document.getElementById('goName').value = savedName;

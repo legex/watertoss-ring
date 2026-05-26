@@ -468,6 +468,7 @@ function landRingOnPeg(ring, pegIdx) {
   ringsScored++;
 
   for (let i = 0; i < 18; i++) emitScoreParticle(ring.x, ring.y, ring.color);
+  AudioManager.playScore();
 
   if (ringsScored >= cfg.rings) {
     setTimeout(() => endLevel(true), 600);
@@ -1572,6 +1573,7 @@ async function endLevel(allScored) {
 }
 
 function showLevelComplete() {
+  AudioManager.playLevelComplete();
   const success = ringsScored === cfg.rings;
   document.getElementById('lvlEndTitle').textContent = isReplayMode
     ? (success ? '🎮 Replay Done!' : '⏰ Replay – Time Up!')
@@ -1586,6 +1588,7 @@ function showLevelComplete() {
 }
 
 function showGameOver(victory) {
+  AudioManager.playGameOver();
   document.getElementById('goTitle').textContent = victory ? '🏆 You Win!' : '🏳 Game Over';
   document.getElementById('goScore').textContent = totalScore.toLocaleString();
   document.getElementById('goLevel').textContent = `Reached Level ${level}`;
@@ -1600,6 +1603,7 @@ function showGameOver(victory) {
 }
 
 function showRetry() {
+  AudioManager.playRetry();
   let heartsHtml = '';
   for (let i = 0; i < MAX_LIVES; i++) {
     heartsHtml += `<span style="opacity:${i < lives ? 1 : 0.2}">❤️</span>`;
@@ -1654,15 +1658,13 @@ function updateTimerBar() {
 function bindBtn(id, setTrue, setFalse) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); });
+  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); AudioManager.playTap(); });
   el.addEventListener('pointerup',    () => { setFalse(); el.classList.remove('pressed'); });
   el.addEventListener('pointerleave', () => { setFalse(); el.classList.remove('pressed'); });
 }
 
-bindBtn('btnLeft',      () => pressLeft = true,      () => pressLeft = false);
-bindBtn('btnRight',     () => pressRight = true,     () => pressRight = false);
-bindBtn('btnWallLeft',  () => pressWallLeft = true,  () => pressWallLeft = false);
-bindBtn('btnWallRight', () => pressWallRight = true, () => pressWallRight = false);
+bindBtn('btnLeft',  () => pressLeft = true,  () => pressLeft = false);
+bindBtn('btnRight', () => pressRight = true, () => pressRight = false);
 
 // Keyboard — ← / A : bottom-left up-jet  |  → / D : bottom-right up-jet
 //            Q / Z  : wall-left (push ←)  |  E / X  : wall-right (push →)
@@ -1678,6 +1680,61 @@ document.addEventListener('keyup', e => {
   if (e.key === 'q' || e.key === 'Q' || e.key === 'z' || e.key === 'Z') pressWallLeft  = false;
   if (e.key === 'e' || e.key === 'E' || e.key === 'x' || e.key === 'X') pressWallRight = false;
 });
+
+// ── Gyroscope steering ─────────────────────────────────────────
+// gamma = left-right tilt: negative = tilted left, positive = tilted right
+const GYRO_THRESHOLD = 8;   // degrees of tilt before activating
+const GYRO_FULL      = 30;  // degrees for maximum force
+
+function attachGyro() {
+  const thumb = document.getElementById('tiltThumb');
+  window.addEventListener('deviceorientation', e => {
+    const gamma = e.gamma || 0;
+    pressWallLeft  = gamma < -GYRO_THRESHOLD;
+    pressWallRight = gamma >  GYRO_THRESHOLD;
+    if (thumb) {
+      // Map gamma (-45 to +45) to 5%–95% position
+      const pct = Math.max(5, Math.min(95, 50 + (gamma / 45) * 45));
+      thumb.style.left = pct + '%';
+      thumb.style.background = Math.abs(gamma) > GYRO_THRESHOLD
+        ? (gamma < 0 ? '#f97316' : '#22d3ee')
+        : 'var(--water-mid)';
+    }
+  });
+}
+
+function showWallButtons() {
+  document.getElementById('canvasWithWalls')?.classList.add('no-gyro');
+  document.getElementById('btnWallLeft')?.classList.remove('gyro-hidden');
+  document.getElementById('btnWallRight')?.classList.remove('gyro-hidden');
+  document.getElementById('tiltIndicator')?.classList.add('gyro-hidden');
+  bindBtn('btnWallLeft',  () => pressWallLeft = true,  () => pressWallLeft = false);
+  bindBtn('btnWallRight', () => pressWallRight = true, () => pressWallRight = false);
+}
+
+function setupGyro() {
+  // No API — fall back to buttons immediately
+  if (typeof DeviceOrientationEvent === 'undefined') { showWallButtons(); return; }
+
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS 13+: request on first touch; fall back if denied
+    document.addEventListener('pointerdown', async function requestOnce() {
+      try {
+        const perm = await DeviceOrientationEvent.requestPermission();
+        if (perm === 'granted') attachGyro(); else showWallButtons();
+      } catch(e) { showWallButtons(); }
+    }, { once: true });
+  } else {
+    // Android / desktop: attach and verify we get real sensor data within 1.5s
+    let gotData = false;
+    const probe = e => {
+      if (e.gamma !== null) { gotData = true; window.removeEventListener('deviceorientation', probe); attachGyro(); }
+    };
+    window.addEventListener('deviceorientation', probe);
+    setTimeout(() => { if (!gotData) { window.removeEventListener('deviceorientation', probe); showWallButtons(); } }, 1500);
+  }
+}
+setupGyro();
 
 // ── Next level button ──────────────────────────────────────────
 document.getElementById('btnNextLevel').addEventListener('click', () => {
@@ -1793,6 +1850,19 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ── Settings modal ─────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('settingMusic').checked = AudioManager.isMusicOn();
+  document.getElementById('settingSfx').checked   = AudioManager.isSfxOn();
+  document.getElementById('settingsBg').classList.add('open');
+}
+function closeSettings() {
+  AudioManager.setMusic(document.getElementById('settingMusic').checked);
+  AudioManager.setSfx(document.getElementById('settingSfx').checked);
+  document.getElementById('settingsBg').classList.remove('open');
+}
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+
 // ── Boot ───────────────────────────────────────────────────────
 async function boot() {
   playerName = sessionStorage.getItem('playerName') || '';
@@ -1808,6 +1878,9 @@ async function boot() {
   state = 'playing';
   lastTimestamp = performance.now();
   animFrame = requestAnimationFrame(tick);
+
+  // Start bg music on first user interaction (browser autoplay policy)
+  document.addEventListener('pointerdown', () => AudioManager.startBg(), { once: true });
 }
 
 boot();

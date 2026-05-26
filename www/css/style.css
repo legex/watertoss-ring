@@ -323,6 +323,9 @@ nav a:hover { color: var(--water-light); text-shadow: 0 0 10px rgba(94,231,255,0
   gap: 8px;
 }
 
+/* Hidden until gyro check confirms no sensor */
+.gyro-hidden { display: none !important; }
+
 /* Side wall-jet buttons */
 .wall-jet-btn {
   width: 44px;
@@ -371,27 +374,135 @@ nav a:hover { color: var(--water-light); text-shadow: 0 0 10px rgba(94,231,255,0
 /* Button area */
 .btn-row {
   display: flex;
-  gap: 16px;
-  margin-top: 4px;
+  gap: 24px;
+  margin-top: 8px;
+  justify-content: center;
 }
 .jet-btn {
-  width: 80px; height: 80px;
+  width: 96px; height: 96px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  transition: transform 0.1s, box-shadow 0.2s;
+  line-height: 1.3;
+  transition: transform 0.07s, box-shadow 0.07s;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: manipulation;
+  position: relative;
 }
-.jet-btn:active, .jet-btn.pressed { transform: scale(0.93); }
-.jet-left  { background: linear-gradient(135deg, #005f9e, #00b4d8); color: #fff; box-shadow: 0 4px 20px rgba(0,180,216,0.55); }
-.jet-right { background: linear-gradient(135deg, #005f9e, #00b4d8); color: #fff; box-shadow: 0 4px 20px rgba(0,180,216,0.55); }
-.jet-left.pressed  { box-shadow: 0 2px 10px rgba(0,180,216,0.35); }
-.jet-right.pressed { box-shadow: 0 2px 10px rgba(0,180,216,0.35); }
+.jet-left  {
+  background: radial-gradient(circle at 38% 32%, #22d3f0, #0077b6);
+  color: #fff;
+  box-shadow: 0 7px 0 #004f80, 0 9px 24px rgba(0,180,216,0.45);
+}
+.jet-right {
+  background: radial-gradient(circle at 38% 32%, #22d3f0, #0077b6);
+  color: #fff;
+  box-shadow: 0 7px 0 #004f80, 0 9px 24px rgba(0,180,216,0.45);
+}
+.jet-btn:active, .jet-btn.pressed {
+  transform: translateY(6px);
+}
+.jet-left:active,  .jet-left.pressed  { box-shadow: 0 1px 0 #004f80, 0 2px 8px rgba(0,180,216,0.3); }
+.jet-right:active, .jet-right.pressed { box-shadow: 0 1px 0 #004f80, 0 2px 8px rgba(0,180,216,0.3); }
+
+/* Gyro tilt indicator */
+.tilt-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+.tilt-bar {
+  width: 140px; height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  position: relative;
+}
+.tilt-thumb {
+  width: 28px; height: 100%;
+  background: var(--water-mid);
+  border-radius: 4px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: left 0.06s linear, background 0.1s;
+}
+
+/* Settings gear button in sidebar */
+.settings-btn {
+  display: block;
+  margin: 10px auto 4px;
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s, transform 0.2s;
+  line-height: 1;
+}
+.settings-btn:hover { opacity: 1; transform: rotate(30deg); }
+
+/* Settings modal backdrop */
+.settings-modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.settings-modal-bg.open { display: flex; }
+
+/* Settings modal card */
+.settings-modal {
+  background: var(--card);
+  border: 1px solid rgba(0,180,216,0.25);
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: min(320px, 90vw);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 1rem;
+  color: var(--text);
+}
+.setting-row:last-of-type { border-bottom: none; }
+
+/* Toggle switch */
+.toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.15);
+  border-radius: 13px;
+  transition: background 0.25s;
+}
+.toggle-switch input:checked + .toggle-track { background: var(--water-mid); }
+.toggle-thumb {
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 20px; height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked + .toggle-track .toggle-thumb { transform: translateX(22px); }
 
 /* Overlays */
 .overlay {
@@ -586,21 +697,20 @@ body[data-theme="space"] #gameCanvas {
   .level-list     { display: none; }
 
   /* Scale canvas to fit phone width — keep internal 480×620 buffer */
-  .canvas-with-walls { gap: 4px; }
-  .wall-jet-btn   { width: 36px; height: 100px; font-size: 0.62rem; }
   #gameCanvas     {
-    /* subtract wall buttons (36px×2) + gaps (4px×2) + page padding (8px×2) */
-    width: min(480px, calc(100vw - 100px));
+    width: min(480px, calc(100vw - 20px));
     height: auto;
     aspect-ratio: 480 / 620;
   }
+  /* When wall buttons are visible (no gyro), shrink canvas to fit */
+  .no-gyro #gameCanvas {
+    width: min(480px, calc(100vw - 100px));
+  }
 
-  .btn-row        { gap: 8px; }
-  .jet-btn        { flex: 1; min-width: 0; padding: 10px 6px; font-size: 0.78rem; }
-  .controls-hint  { font-size: 0.70rem; }
-
-  /* Prevent text selection while holding buttons on touch */
-  .jet-btn, .wall-jet-btn { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+  .btn-row        { gap: 20px; }
+  .jet-btn        { width: 88px; height: 88px; font-size: 0.75rem; }
+  .tilt-indicator { font-size: 0.68rem; }
+  .controls-hint  { display: none; }
 }
 
 /* Safe-area insets for notched phones (iPhone X+, Android with cutout) */

@@ -14,18 +14,23 @@ const AudioManager = (() => {
   // ── Lazy AudioContext ─────────────────────────────────────────
   function ac() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
     return ctx;
+  }
+
+  async function acReady() {
+    const c = ac();
+    if (c.state === 'suspended') await c.resume();
+    return c;
   }
 
   // ── Background music ──────────────────────────────────────────
   // Aquatic ambient pad: sine drones + slow LFO + pentatonic arpeggio
   const ARP_NOTES = [261.63, 329.63, 392, 493.88, 523.25]; // C4 E4 G4 B4 C5
 
-  function startBg() {
+  async function startBg() {
     stopBg();
     if (!musicOn) return;
-    const c = ac();
+    const c = await acReady(); // wait for context to be running before creating nodes
 
     const master = c.createGain();
     master.gain.setValueAtTime(0, c.currentTime);
@@ -223,7 +228,7 @@ const AudioManager = (() => {
   // Pause/resume bg when tab is hidden
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
-    document.hidden ? ctx.suspend() : (musicOn && ctx.resume());
+    if (document.hidden) { ctx.suspend(); } else if (musicOn) { ctx.resume(); }
   });
 
   return { startBg, stopBg, playTap, playScore, playLevelComplete, playRetry, playGameOver, startJetSound, stopJetSound, setMusic, setSfx, isMusicOn, isSfxOn };

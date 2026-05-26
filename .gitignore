@@ -4,3 +4,10 @@ __pycache__/
 *.db
 .env
 .DS_Store
+
+# Node / Capacitor
+node_modules/
+android/.gradle/
+android/app/build/
+android/build/
+.capacitor/

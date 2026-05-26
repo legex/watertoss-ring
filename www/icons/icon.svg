@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000d1a"/>
+      <stop offset="100%" stop-color="#001428"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0096c7" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#023e8a" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="ringTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5ee7ff"/>
+      <stop offset="100%" stop-color="#00b4d8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="55%">
+      <stop offset="0%" stop-color="#5ee7ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#5ee7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- App background (rounded rect for maskable icon safe zone) -->
+  <rect width="512" height="512" rx="80" fill="url(#bg)"/>
+
+  <!-- Ambient glow -->
+  <circle cx="256" cy="280" r="220" fill="url(#glow)"/>
+
+  <!-- Water body with wave -->
+  <path d="M0 300 Q64 272 128 295 Q192 318 256 292 Q320 266 384 290 Q448 314 512 290 L512 512 L0 512 Z" fill="url(#water)"/>
+  <!-- Deeper lower layer -->
+  <path d="M0 355 Q80 335 160 355 Q240 375 320 350 Q400 325 512 345 L512 512 L0 512 Z" fill="#023e8a" opacity="0.55"/>
+
+  <!-- Peg post -->
+  <rect x="241" y="108" width="30" height="290" rx="15" fill="#e85d04"/>
+  <!-- Peg cap -->
+  <circle cx="256" cy="108" r="22" fill="#f48c06"/>
+  <circle cx="256" cy="108" r="11" fill="#ffd60a"/>
+
+  <!-- Ring landed (bottom — ellipse for perspective foreshortening) -->
+  <ellipse cx="256" cy="352" rx="80" ry="25" fill="none" stroke="#22c55e" stroke-width="17" stroke-linecap="round"/>
+
+  <!-- Ring mid -->
+  <ellipse cx="256" cy="288" rx="80" ry="25" fill="none" stroke="#f97316" stroke-width="17" stroke-linecap="round"/>
+
+  <!-- Ring in air (full circle) -->
+  <circle cx="256" cy="186" r="80" fill="none" stroke="url(#ringTop)" stroke-width="17"/>
+
+  <!-- Bubbles left -->
+  <circle cx="88"  cy="322" r="15" fill="none" stroke="#5ee7ff" stroke-width="4.5" opacity="0.85"/>
+  <circle cx="68"  cy="278" r="9"  fill="none" stroke="#5ee7ff" stroke-width="3.5" opacity="0.60"/>
+  <circle cx="108" cy="258" r="5"  fill="#5ee7ff"                                  opacity="0.50"/>
+
+  <!-- Bubbles right -->
+  <circle cx="424" cy="308" r="13" fill="none" stroke="#5ee7ff" stroke-width="4"   opacity="0.80"/>
+  <circle cx="444" cy="268" r="7"  fill="none" stroke="#5ee7ff" stroke-width="3"   opacity="0.55"/>
+  <circle cx="408" cy="250" r="4"  fill="#5ee7ff"                                  opacity="0.45"/>
+
+  <!-- Water surface shimmer -->
+  <path d="M40 296  Q80 285  120 298"  stroke="#7ecff5" stroke-width="3.5" fill="none" opacity="0.45" stroke-linecap="round"/>
+  <path d="M375 274 Q415 263 455 278" stroke="#7ecff5" stroke-width="3.5" fill="none" opacity="0.40" stroke-linecap="round"/>
+</svg>

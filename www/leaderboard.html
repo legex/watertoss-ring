@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Leaderboard — Waterful Ring Toss</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#00b4d8"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="WaterToss"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <div class="bubble-layer" aria-hidden="true">
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+  </div>
+
+  <nav>
+    <div class="logo">💧 Waterful <span>Ring Toss</span></div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="game.html">Play</a>
+      <a href="leaderboard.html">Leaderboard</a>
+    </div>
+  </nav>
+
+  <div class="lb-page">
+    <h1>🏆 Leaderboard</h1>
+
+    <div id="lbContent">
+      <div style="text-align:center;padding:60px 0;color:var(--muted);">
+        <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+        <p>Loading scores…</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px;">
+      <a class="btn btn-primary" href="game.html">Play Now</a>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="config.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    // Restore status bar when returning from the game
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.Capacitor?.isNativePlatform()) {
+        const { StatusBar } = window.Capacitor.Plugins;
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.show();
+      }
+    });
+
+    fetch(API_BASE + '/api/scores')
+      .then(r => r.json())
+      .then(data => {
+        const scores = data.scores || [];
+        if (!scores.length) {
+          document.getElementById('lbContent').innerHTML = `
+            <div style="text-align:center;padding:60px 0;color:var(--muted);">
+              <div style="font-size:3rem;margin-bottom:16px;">🎯</div>
+              <p>No scores yet — be the first to play!</p>
+            </div>`;
+          return;
+        }
+        document.getElementById('lbContent').innerHTML = `
+          <table class="score-table">
+            <thead>
+              <tr><th>#</th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              ${scores.map((s, i) => {
+                const rank = i + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                const crown = rank === 1 ? '👑 ' : '';
+                const bold = rank === 1 ? 'font-weight:700;' : '';
+                const maxStyle = s.level_reached === 30 ? 'background:var(--accent);color:#111;' : '';
+                const star = s.level_reached === 30 ? '★ ' : '';
+                return `<tr>
+                  <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                  <td style="${bold}">${crown}${s.player_name}</td>
+                  <td style="color:var(--accent);font-weight:700;">${s.score.toLocaleString()}</td>
+                  <td><span class="lv-badge" style="${maxStyle}">${star}Lv ${s.level_reached}</span></td>
+                  <td style="color:var(--muted);font-size:0.82rem;">${s.created_at ? s.created_at.slice(0, 10) : '—'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`;
+      })
+      .catch(() => {
+        document.getElementById('lbContent').innerHTML = `
+          <div style="text-align:center;padding:60px 0;color:var(--muted);">
+            <div style="font-size:3rem;margin-bottom:16px;">📡</div>
+            <p>Could not load scores — check your connection.</p>
+          </div>`;
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "appId": "com.watertoss.app",
+  "appName": "Waterful Ring Toss",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Waterful Ring Toss — Home</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#00b4d8"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="WaterToss"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <div class="bubble-layer" aria-hidden="true">
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+    <div class="bg-bubble"></div>
+  </div>
+
+  <nav>
+    <div class="logo">💧 Waterful <span>Ring Toss</span></div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="game.html">Play</a>
+      <a href="leaderboard.html">Leaderboard</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>💧 Waterful <span>Ring Toss</span></h1>
+    <p>Press the water jet buttons to propel rings onto pegs. Master all 30 levels and claim the top spot on the leaderboard!</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('nameModal').classList.add('active')">
+        ▶ Play Now
+      </button>
+      <a class="btn btn-ghost" href="leaderboard.html">Leaderboard</a>
+    </div>
+  </section>
+
+  <section style="max-width:700px;margin:0 auto 48px;padding:0 20px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+      <div class="info-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">💧</div>
+        <div style="font-weight:700;margin-bottom:6px;color:var(--water-light);">Press Jets</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Hold left or right button to shoot water jets and lift rings</div>
+      </div>
+      <div class="info-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">🎯</div>
+        <div style="font-weight:700;margin-bottom:6px;color:var(--water-light);">Land on Pegs</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Guide rings to land on any peg in the upper zone</div>
+      </div>
+      <div class="info-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">⏱</div>
+        <div style="font-weight:700;margin-bottom:6px;color:var(--water-light);">Beat the Clock</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Each level has a time limit — score fast for bonus points</div>
+      </div>
+      <div class="info-card" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">⬆</div>
+        <div style="font-weight:700;margin-bottom:6px;color:var(--water-light);">30 Levels</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Difficulty increases every level — moving pegs, more rings!</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scores-section" id="scoresSection" style="display:none;">
+    <h2>🏆 Top Scores</h2>
+    <table class="score-table">
+      <thead>
+        <tr><th>#</th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr>
+      </thead>
+      <tbody id="scoresBody"></tbody>
+    </table>
+    <div style="text-align:center;margin-top:14px;">
+      <a class="btn btn-ghost btn-sm" href="leaderboard.html">View All</a>
+    </div>
+  </section>
+
+  <div id="nameModal" class="modal-overlay">
+    <div class="modal">
+      <h2>Enter Your Name</h2>
+      <p>Your name will appear on the leaderboard.</p>
+      <input type="text" id="playerNameInput" maxlength="20" placeholder="Your name…" autofocus/>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-primary" onclick="startGame()">Let's Go!</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('nameModal').classList.remove('active')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="config.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    // Restore status bar when returning from the game
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.Capacitor?.isNativePlatform()) {
+        const { StatusBar } = window.Capacitor.Plugins;
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.show();
+      }
+    });
+
+    fetch(API_BASE + '/api/scores')
+      .then(r => r.json())
+      .then(data => {
+        const scores = (data.scores || []).slice(0, 5);
+        if (!scores.length) return;
+        const RANK_CLASSES = ['rank-1', 'rank-2', 'rank-3'];
+        document.getElementById('scoresBody').innerHTML = scores.map((s, i) => `
+          <tr>
+            <td><span class="rank-badge ${RANK_CLASSES[i] || ''}">${i + 1}</span></td>
+            <td>${s.player_name}</td>
+            <td>${s.score.toLocaleString()}</td>
+            <td><span class="lv-badge">Lv ${s.level_reached}</span></td>
+            <td style="color:var(--muted);font-size:0.8rem;">${s.created_at ? s.created_at.slice(0, 10) : '—'}</td>
+          </tr>
+        `).join('');
+        document.getElementById('scoresSection').style.display = '';
+      })
+      .catch(() => {});
+
+    document.getElementById('playerNameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') startGame();
+    });
+
+    function startGame() {
+      const name = document.getElementById('playerNameInput').value.trim() || 'Anonymous';
+      sessionStorage.setItem('playerName', name);
+      window.location.href = 'game.html';
+    }
+  </script>
+</body>
+</html>

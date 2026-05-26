@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
@@ -16,6 +17,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Waterful Ring Toss", lifespan=lifespan)
+
+# Allow Capacitor Android (capacitor://localhost, http://localhost) and web origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "capacitor://localhost",
+        "http://localhost",
+        "https://localhost",
+        "http://localhost:8100",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 

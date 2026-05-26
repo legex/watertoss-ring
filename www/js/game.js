@@ -141,8 +141,8 @@ let campaignLevel   = 1;
 let campaignScore   = 0;
 
 function getThemeIdx() {
-  // 6 themes spread evenly across 100 levels (~17 levels each)
-  return Math.min(5, Math.floor((level - 1) / 17));
+  // 6 themes spread evenly across 150 levels (25 levels each)
+  return Math.min(5, Math.floor((level - 1) / 25));
 }
 
 function saveLives() {
@@ -191,7 +191,7 @@ function buildLevelList() {
   const container = document.getElementById('levelList');
   if (!container) return;
   container.innerHTML = '';
-  for (let i = 1; i <= 100; i++) {
+  for (let i = 1; i <= 150; i++) {
     const div = document.createElement('div');
     div.id = `lvl-item-${i}`;
     div.innerHTML = `<span class="lv-num">${i}</span><span>Level ${i}</span>`;
@@ -1551,8 +1551,8 @@ async function endLevel(allScored) {
 
   if (isReplayMode) {
     showLevelComplete(); // overlay adapts based on isReplayMode flag
-  } else if (allScored && level >= 100) {
-    showGameOver(true); // victory — all 100 levels beaten
+  } else if (allScored && level >= 150) {
+    showGameOver(true); // victory — all 150 levels beaten
   } else if (!allScored) {
     loseLife();
     if (lives <= 0) {
@@ -1564,10 +1564,11 @@ async function endLevel(allScored) {
     // Campaign level complete
     completedLevels.add(level);
     localStorage.setItem('watertoss_completed', JSON.stringify([...completedLevels]));
-    if (level % 5 === 0) {
+    if (level % 20 === 0) {
       gainLife();
       showToast(`+1 Life! ❤️ ${lives} remaining`);
     }
+    if (level % 4 === 0) await AdManager.showInterstitial();
     showLevelComplete();
   }
 }
@@ -1635,7 +1636,7 @@ function updateUI() {
   }
 
   // Level list
-  for (let i = 1; i <= 100; i++) {
+  for (let i = 1; i <= 150; i++) {
     const el = document.getElementById(`lvl-item-${i}`);
     if (!el) continue;
     const done    = completedLevels.has(i);
@@ -1658,9 +1659,9 @@ function updateTimerBar() {
 function bindBtn(id, setTrue, setFalse) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); AudioManager.playTap(); });
-  el.addEventListener('pointerup',    () => { setFalse(); el.classList.remove('pressed'); });
-  el.addEventListener('pointerleave', () => { setFalse(); el.classList.remove('pressed'); });
+  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); AudioManager.startJetSound(); });
+  el.addEventListener('pointerup',    () => { setFalse(); el.classList.remove('pressed'); AudioManager.stopJetSound(); });
+  el.addEventListener('pointerleave', () => { setFalse(); el.classList.remove('pressed'); AudioManager.stopJetSound(); });
 }
 
 bindBtn('btnLeft',  () => pressLeft = true,  () => pressLeft = false);
@@ -1873,7 +1874,7 @@ async function boot() {
   buildLevelList();
   // Resume from first unbeaten level instead of always starting at 1
   const highestDone = completedLevels.size > 0 ? Math.max(...completedLevels) : 0;
-  const startLevel  = Math.min(100, highestDone + 1);
+  const startLevel  = Math.min(150, highestDone + 1);
   initLevel(startLevel);
   state = 'playing';
   lastTimestamp = performance.now();

@@ -131,7 +131,7 @@ let playerName    = '';
 let pegPhase      = 0; // for oscillating peg movement
 
 function getThemeIdx() {
-  return Math.min(5, Math.floor((level - 1) / 5));
+  return Math.min(5, Math.floor((level - 1) / 25));
 }
 
 // ── Fetch level configs ────────────────────────────────────────
@@ -377,6 +377,7 @@ function landRingOnPeg(ring, pegIdx) {
   peg.ringCount++;
   peg.wobble  = 8;
   ringsScored++;
+  AudioManager.playScore();
 
   for (let i = 0; i < 18; i++) emitScoreParticle(ring.x, ring.y, ring.color);
 
@@ -1459,14 +1460,15 @@ async function endLevel(allScored) {
 
   document.getElementById('totalScoreDisplay').textContent = totalScore.toLocaleString();
 
-  if (!allScored || level >= 30) {
-    showGameOver(allScored && level >= 30);
+  if (!allScored || level >= 150) {
+    showGameOver(allScored && level >= 150);
   } else {
     showLevelComplete();
   }
 }
 
 function showLevelComplete() {
+  AudioManager.playLevelComplete();
   const overlay = document.getElementById('levelEndOverlay');
   document.getElementById('lvlEndTitle').textContent = `Level ${level} Complete!`;
   document.getElementById('lvlEndScore').textContent  = `+${levelScore.toLocaleString()}`;
@@ -1476,6 +1478,7 @@ function showLevelComplete() {
 }
 
 function showGameOver(victory) {
+  AudioManager.playGameOver();
   const overlay = document.getElementById('gameOverOverlay');
   document.getElementById('goTitle').textContent    = victory ? '🏆 You Win!' : (timeLeft <= 0 ? '⏰ Time Up!' : 'Level Failed');
   document.getElementById('goScore').textContent    = totalScore.toLocaleString();
@@ -1500,7 +1503,7 @@ function updateUI() {
   }
 
   // Level list
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= 150; i++) {
     const el = document.getElementById(`lvl-item-${i}`);
     if (!el) continue;
     el.className = 'level-item' +
@@ -1520,9 +1523,9 @@ function updateTimerBar() {
 function bindBtn(id, setTrue, setFalse) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); });
-  el.addEventListener('pointerup',    () => { setFalse(); el.classList.remove('pressed'); });
-  el.addEventListener('pointerleave', () => { setFalse(); el.classList.remove('pressed'); });
+  el.addEventListener('pointerdown',  () => { setTrue();  el.classList.add('pressed'); AudioManager.startJetSound(); });
+  el.addEventListener('pointerup',    () => { setFalse(); el.classList.remove('pressed'); AudioManager.stopJetSound(); });
+  el.addEventListener('pointerleave', () => { setFalse(); el.classList.remove('pressed'); AudioManager.stopJetSound(); });
 }
 
 bindBtn('btnLeft',      () => pressLeft = true,      () => pressLeft = false);
@@ -1598,6 +1601,8 @@ async function boot() {
   state = 'playing';
   lastTimestamp = performance.now();
   animFrame = requestAnimationFrame(tick);
+
+  document.addEventListener('pointerdown', () => AudioManager.startBg(), { once: true });
 }
 
 boot();

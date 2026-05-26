@@ -8,14 +8,15 @@
  *      <meta-data
  *        android:name="com.google.android.gms.ads.APPLICATION_ID"
  *        android:value="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"/>
- * 4. Replace REWARDED_ID below with your real rewarded ad unit ID.
+ * 4. Replace REWARDED_ID / INTERSTITIAL_ID below with your real ad unit IDs.
  *
- * Until then, the test ID is used and on web/dev the ad is auto-skipped
- * so the lives flow can be tested in a browser without a real device.
+ * Until then, test IDs are used and on web/dev ads are auto-skipped
+ * so the flow can be tested in a browser without a real device.
  */
 const AdManager = (() => {
-  // Google's public test rewarded ad ID — replace before publishing
-  const REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
+  // Google's public test ad IDs — replace before publishing
+  const REWARDED_ID      = 'ca-app-pub-3940256099942544/5224354917';
+  const INTERSTITIAL_ID  = 'ca-app-pub-3940256099942544/1033173712';
 
   let ready = false;
 
@@ -46,5 +47,18 @@ const AdManager = (() => {
     }
   }
 
-  return { init, showRewarded };
+  async function showInterstitial() {
+    // On web / browser: skip silently
+    if (!window.Capacitor?.isNativePlatform()) return;
+    if (!ready) return;
+    try {
+      const { AdMob } = window.Capacitor.Plugins;
+      await AdMob.prepareInterstitial({ adId: INTERSTITIAL_ID });
+      await AdMob.showInterstitial();
+    } catch (e) {
+      console.warn('[Ads] interstitial failed', e);
+    }
+  }
+
+  return { init, showRewarded, showInterstitial };
 })();

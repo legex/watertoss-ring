@@ -56,8 +56,8 @@ LEVELS = {
 
 
 def _gen(n: int) -> dict:
-    """Smooth progression formula for levels 31-100."""
-    t = (n - 31) / 69.0  # 0.0 at level 31, 1.0 at level 100
+    """Smooth progression formula for levels 31-150."""
+    t = (n - 31) / 119.0  # 0.0 at level 31, 1.0 at level 150
     return {
         "pegs":            8,
         "rings":           min(25, round(20 + t * 5)),
@@ -71,17 +71,17 @@ def _gen(n: int) -> dict:
     }
 
 
-for _n in range(31, 101):
+for _n in range(31, 151):
     LEVELS[_n] = _gen(_n)
 
-MAX_LEVEL = 100
+MAX_LEVEL = 150
 
 TIME_BONUS_MULTIPLIER = 5
 PERFECT_CLEAR_BONUS   = 500
 
 
 def calculate_score(level: int, rings_scored: int, rings_total: int, time_remaining: float) -> int:
-    cfg   = LEVELS.get(level, LEVELS[100])
+    cfg   = LEVELS.get(level, LEVELS[150])
     base  = rings_scored * cfg["points_per_ring"]
     time_bonus = int(time_remaining * TIME_BONUS_MULTIPLIER)
     perfect    = PERFECT_CLEAR_BONUS if rings_scored == rings_total else 0

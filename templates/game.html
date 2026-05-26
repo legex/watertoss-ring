@@ -33,7 +33,7 @@
     <div class="info-card">
       <div class="label" style="margin-bottom:10px;">Levels</div>
       <div class="level-list">
-        {% for i in range(1, 31) %}
+        {% for i in range(1, 151) %}
         <div class="level-item" id="lvl-item-{{ i }}">
           <span class="lv-num">{{ i }}</span>
           <span>Level {{ i }}</span>
@@ -99,5 +99,6 @@
   const savedName = sessionStorage.getItem('playerName') || '';
   if (savedName) document.getElementById('goName').value = savedName;
 </script>
+<script src="/static/js/audio.js"></script>
 <script src="/static/js/game.js"></script>
 {% endblock %}

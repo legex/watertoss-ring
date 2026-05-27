@@ -1800,6 +1800,8 @@ document.getElementById('btnRestart').addEventListener('click', () => {
   saveLives();
   updateLivesUI();
   totalScore = 0;
+  completedLevels.clear();
+  localStorage.removeItem('watertoss_completed');
   initLevel(1);
   state = 'playing';
 });
@@ -1839,6 +1841,8 @@ document.getElementById('btnStartOver').addEventListener('click', () => {
   saveLives();
   updateLivesUI();
   totalScore = 0;
+  completedLevels.clear();
+  localStorage.removeItem('watertoss_completed');
   initLevel(1);
   state = 'playing';
 });

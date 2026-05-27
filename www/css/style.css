@@ -691,10 +691,16 @@ body[data-theme="space"] #gameCanvas {
 }
 
 @media (max-width: 700px) {
-  .game-layout    { flex-direction: column; padding: 0 8px; }
-  .game-sidebar   { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 8px; }
-  .info-card      { flex: 1 1 100px; padding: 8px 10px; }
+  /* Lock entire game to viewport — no page scroll regardless of level/ring count */
+  .game-layout    { flex-direction: column; padding: 0 8px; height: 100svh; overflow: hidden; }
+  .game-sidebar   { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+  .info-card      { flex: 1 1 90px; padding: 6px 8px; }
+  .info-card .value { font-size: 1.4rem; }
   .level-list     { display: none; }
+  /* Ring dots grow to 25+ at high levels — the "0 / N" text already shows count */
+  .ring-progress  { display: none; }
+  /* Allow canvas-wrap to shrink so the sidebar never pushes it off-screen */
+  .canvas-wrap    { min-height: 0; flex: 1; }
 
   /* Scale canvas to fit phone width — keep internal 480×620 buffer */
   #gameCanvas     {

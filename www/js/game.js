@@ -1588,8 +1588,52 @@ function showLevelComplete() {
   document.getElementById('levelEndOverlay').classList.add('active');
 }
 
+// ── Auto-save score if it qualifies for local top 10 or global top 100 ────
+let _autoSaved = false;
+async function autoSaveScore() {
+  if (totalScore <= 0 || isReplayMode || _autoSaved) return;
+
+  const name = playerName || 'Anonymous';
+
+  // Check local top 10
+  const local = JSON.parse(localStorage.getItem('watertoss_scores') || '[]');
+  local.sort((a, b) => b.score - a.score);
+  const qualifiesLocal = local.length < 10 || totalScore > (local[9]?.score ?? 0);
+
+  // Check global top 100
+  let qualifiesGlobal = false;
+  try {
+    const res  = await fetch(API_BASE + '/api/scores/threshold');
+    const data = await res.json();
+    qualifiesGlobal = data.total_count < 100 || totalScore > data.top_min;
+  } catch (e) { /* offline — skip global check */ }
+
+  if (!qualifiesLocal && !qualifiesGlobal) return;
+  _autoSaved = true;
+
+  // Save locally
+  local.push({ player_name: name, score: totalScore, level_reached: level, created_at: new Date().toISOString() });
+  local.sort((a, b) => b.score - a.score);
+  localStorage.setItem('watertoss_scores', JSON.stringify(local.slice(0, 50)));
+
+  // Save globally
+  try {
+    await fetch(API_BASE + '/api/scores', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ player_name: name, level, rings_scored: ringsScored, rings_total: cfg.rings, time_remaining: timeLeft, total_score: totalScore }),
+    });
+  } catch (e) { /* will retry on manual save */ }
+
+  showToast(`Score auto-saved! 🏆`);
+  // Hide manual save UI since score is already saved
+  document.getElementById('btnSubmitScore').style.display = 'none';
+  document.getElementById('goName').style.display         = 'none';
+}
+
 function showGameOver(victory) {
   AudioManager.playGameOver();
+  _autoSaved = false;
   document.getElementById('goTitle').textContent = victory ? '🏆 You Win!' : '🏳 Game Over';
   document.getElementById('goScore').textContent = totalScore.toLocaleString();
   document.getElementById('goLevel').textContent = `Reached Level ${level}`;
@@ -1601,6 +1645,7 @@ function showGameOver(victory) {
   document.getElementById('btnRestart').style.display     = showSave ? '' : 'none';
   document.getElementById('btnCampaign').style.display    = isReplayMode ? '' : 'none';
   document.getElementById('gameOverOverlay').classList.add('active');
+  if (!isReplayMode) autoSaveScore();
 }
 
 function showRetry() {
@@ -1618,6 +1663,7 @@ function showRetry() {
 function showNoLives() {
   document.getElementById('noLivesLevel').textContent = level;
   document.getElementById('noLivesOverlay').classList.add('active');
+  autoSaveScore();
 }
 
 // ── UI helpers ─────────────────────────────────────────────────
@@ -1760,6 +1806,7 @@ document.getElementById('btnCampaign').addEventListener('click', () => {
 
 // ── Submit score & restart ─────────────────────────────────────
 document.getElementById('btnSubmitScore').addEventListener('click', async () => {
+  if (_autoSaved) return; // already saved automatically
   const name = playerName || document.getElementById('goName').value.trim() || 'Anonymous';
   // Always save locally first (works offline)
   const entry = {
@@ -1796,6 +1843,7 @@ document.getElementById('btnSubmitScore').addEventListener('click', async () => 
 
 document.getElementById('btnRestart').addEventListener('click', () => {
   document.getElementById('gameOverOverlay').classList.remove('active');
+  _autoSaved = false;
   lives = 3;
   saveLives();
   updateLivesUI();
@@ -1837,6 +1885,7 @@ document.getElementById('btnWatchAd').addEventListener('click', async () => {
 
 document.getElementById('btnStartOver').addEventListener('click', () => {
   document.getElementById('noLivesOverlay').classList.remove('active');
+  _autoSaved = false;
   lives = 3;
   saveLives();
   updateLivesUI();

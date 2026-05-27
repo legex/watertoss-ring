@@ -47,6 +47,20 @@ def get_top_scores(limit: int = 10):
     return [dict(r) for r in rows]
 
 
+def get_score_threshold(limit: int = 100):
+    """Return the minimum score in the top `limit` entries, and total count."""
+    conn = get_db()
+    total = conn.execute("SELECT COUNT(*) FROM high_scores").fetchone()[0]
+    if total < limit:
+        return {"top_min": 0, "total_count": total}
+    row = conn.execute(
+        "SELECT score FROM high_scores ORDER BY score DESC LIMIT 1 OFFSET ?",
+        (limit - 1,),
+    ).fetchone()
+    conn.close()
+    return {"top_min": row["score"] if row else 0, "total_count": total}
+
+
 def get_level_top_scores(level: int, limit: int = 5):
     conn = get_db()
     rows = conn.execute(

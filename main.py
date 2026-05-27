@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
-from database import init_db, save_score, get_top_scores
+from database import init_db, save_score, get_top_scores, get_score_threshold
 from game_config import LEVELS, MAX_LEVEL, calculate_score
 
 
@@ -119,6 +119,11 @@ async def submit_score(data: ScoreSubmit):
 @app.get("/api/scores")
 async def api_scores():
     return {"scores": get_top_scores(10)}
+
+
+@app.get("/api/scores/threshold")
+async def api_scores_threshold():
+    return get_score_threshold(100)
 
 
 class ScoreCalcRequest(BaseModel):

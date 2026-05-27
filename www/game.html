@@ -74,6 +74,7 @@
         <div class="level-list" id="levelList"></div>
       </div>
 
+      <button class="settings-btn" id="btnLevels" title="Levels" style="margin-bottom:4px;">📋</button>
       <button class="settings-btn" id="btnSettings" title="Settings">⚙️</button>
     </aside>
 
@@ -96,6 +97,10 @@
             <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
               <button class="btn btn-primary" id="btnNextLevel">Next Level →</button>
               <button class="btn btn-ghost"   id="btnExitReplay" style="display:none;">← Campaign</button>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;">
+              <button class="btn btn-ghost"   id="btnSaveExit"    style="display:none;font-size:0.85rem;">💾 Save &amp; Exit</button>
+              <button class="btn btn-ghost"   id="btnGiveUpLevel" style="display:none;font-size:0.85rem;color:var(--red);">🏳 Give Up</button>
             </div>
           </div>
 
@@ -188,6 +193,16 @@
       </div>
 
       <button class="btn btn-primary" style="margin-top:24px;width:100%;" onclick="closeSettings()">Done</button>
+    </div>
+  </div>
+
+  <!-- Levels modal (replay completed levels — shown on mobile where sidebar list is hidden) -->
+  <div class="settings-modal-bg" id="levelsBg" onclick="closeLevels()">
+    <div class="settings-modal" style="max-height:80vh;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
+      <h3 style="margin:0 0 14px;color:var(--water-light);flex-shrink:0;">📋 Levels</h3>
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;flex-shrink:0;">Tap a completed level to replay it.</p>
+      <div class="level-list" id="levelListModal" style="max-height:none;flex:1;overflow-y:auto;"></div>
+      <button class="btn btn-primary" style="margin-top:16px;width:100%;flex-shrink:0;" onclick="closeLevels()">Close</button>
     </div>
   </div>
 

@@ -188,19 +188,46 @@ function gainLife(n = 1) {
 
 // ── Level list ─────────────────────────────────────────────────
 function buildLevelList() {
-  const container = document.getElementById('levelList');
-  if (!container) return;
-  container.innerHTML = '';
-  for (let i = 1; i <= 150; i++) {
-    const div = document.createElement('div');
-    div.id = `lvl-item-${i}`;
-    div.innerHTML = `<span class="lv-num">${i}</span><span>Level ${i}</span>`;
-    div.addEventListener('click', () => {
-      if (completedLevels.has(i) && !isReplayMode) startReplay(i);
-    });
-    container.appendChild(div);
-  }
+  ['levelList', 'levelListModal'].forEach(containerId => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 1; i <= 150; i++) {
+      const div = document.createElement('div');
+      div.className = 'level-item';
+      div.id = containerId === 'levelList' ? `lvl-item-${i}` : `lvl-modal-${i}`;
+      div.innerHTML = `<span class="lv-num">${i}</span><span>Level ${i}</span>`;
+      div.addEventListener('click', () => {
+        if (completedLevels.has(i) && !isReplayMode) {
+          closeLevels();
+          startReplay(i);
+        }
+      });
+      container.appendChild(div);
+    }
+  });
 }
+
+function openLevels() {
+  // Sync modal item states with current progress
+  for (let i = 1; i <= 150; i++) {
+    const el = document.getElementById(`lvl-modal-${i}`);
+    if (!el) continue;
+    const done    = completedLevels.has(i);
+    const current = i === level;
+    el.className  = 'level-item' +
+      (current ? ' current' : done ? ' done replay-able' : '');
+  }
+  // Scroll to current level
+  document.getElementById(`lvl-modal-${level}`)?.scrollIntoView({ block: 'center' });
+  document.getElementById('levelsBg').classList.add('open');
+}
+
+function closeLevels() {
+  document.getElementById('levelsBg').classList.remove('open');
+}
+
+document.getElementById('btnLevels').addEventListener('click', openLevels);
 
 // ── Replay ─────────────────────────────────────────────────────
 function startReplay(lvl) {
@@ -1527,24 +1554,20 @@ function drawJetStream(side) {
   ctx.restore();
 }
 
+// ── Score formula (mirrors server-side game_config.py) ─────────
+function calculateLevelScore(rings, total, timeRemaining) {
+  const base      = rings * cfg.points_per_ring;
+  const timeBonus = Math.floor(timeRemaining * 5);
+  const perfect   = rings === total ? 500 : 0;
+  return base + timeBonus + perfect;
+}
+
 // ── Level end logic ────────────────────────────────────────────
-async function endLevel(allScored) {
+function endLevel(allScored) {
   state = 'levelEnd';
   clearInterval(timerInterval);
 
-  // Calculate score for this level
-  const res = await fetch(API_BASE + '/api/calculate-score', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      level,
-      rings_scored: ringsScored,
-      rings_total:  cfg.rings,
-      time_remaining: timeLeft,
-    }),
-  });
-  const data = await res.json();
-  levelScore = allScored ? data.score : 0;
+  levelScore = allScored ? calculateLevelScore(ringsScored, cfg.rings, timeLeft) : 0;
   if (!isReplayMode) totalScore += levelScore; // replay score never affects campaign total
 
   document.getElementById('totalScoreDisplay').textContent = totalScore.toLocaleString();
@@ -1583,8 +1606,10 @@ function showLevelComplete() {
   document.getElementById('lvlEndRings').textContent = `${ringsScored} / ${cfg.rings} rings`;
   document.getElementById('lvlEndTime').textContent  = `Time left: ${timeLeft.toFixed(1)}s`;
   // Swap buttons for replay vs campaign
-  document.getElementById('btnNextLevel').textContent   = isReplayMode ? '🔄 Play Again' : 'Next Level →';
-  document.getElementById('btnExitReplay').style.display = isReplayMode ? '' : 'none';
+  document.getElementById('btnNextLevel').textContent    = isReplayMode ? '🔄 Play Again' : 'Next Level →';
+  document.getElementById('btnExitReplay').style.display  = isReplayMode ? '' : 'none';
+  document.getElementById('btnSaveExit').style.display    = isReplayMode ? 'none' : '';
+  document.getElementById('btnGiveUpLevel').style.display = isReplayMode ? 'none' : '';
   document.getElementById('levelEndOverlay').classList.add('active');
 }
 
@@ -1681,14 +1706,14 @@ function updateUI() {
     dotsEl.appendChild(dot);
   }
 
-  // Level list
+  // Level list (sidebar + modal)
   for (let i = 1; i <= 150; i++) {
-    const el = document.getElementById(`lvl-item-${i}`);
-    if (!el) continue;
-    const done    = completedLevels.has(i);
-    const current = i === level;
-    el.className  = 'level-item' +
-      (current ? ' current' : done ? ' done replay-able' : '');
+    const done = completedLevels.has(i), current = i === level;
+    const cls  = 'level-item' + (current ? ' current' : done ? ' done replay-able' : '');
+    const el   = document.getElementById(`lvl-item-${i}`);
+    const mel  = document.getElementById(`lvl-modal-${i}`);
+    if (el)  el.className  = cls;
+    if (mel) mel.className = cls;
   }
   document.getElementById(`lvl-item-${level}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
@@ -1841,17 +1866,29 @@ document.getElementById('btnSubmitScore').addEventListener('click', async () => 
   setTimeout(() => { window.location.href = 'leaderboard.html'; }, 1200);
 });
 
-document.getElementById('btnRestart').addEventListener('click', () => {
-  document.getElementById('gameOverOverlay').classList.remove('active');
+document.getElementById('btnSaveExit').addEventListener('click', () => {
+  document.getElementById('levelEndOverlay').classList.remove('active');
+  saveProgress(); // persists totalScore; completedLevels + lives already saved
+  window.location.href = 'index.html';
+});
+
+document.getElementById('btnGiveUpLevel').addEventListener('click', async () => {
+  document.getElementById('levelEndOverlay').classList.remove('active');
+  await autoSaveScore(); // update high score if qualifying
   _autoSaved = false;
   lives = 3;
   saveLives();
-  updateLivesUI();
   totalScore = 0;
-  completedLevels.clear();
-  localStorage.removeItem('watertoss_completed');
-  initLevel(1);
-  state = 'playing';
+  clearProgress();
+  window.location.href = 'index.html';
+});
+
+document.getElementById('btnRestart').addEventListener('click', () => {
+  document.getElementById('gameOverOverlay').classList.remove('active');
+  lives = 3;
+  saveLives();
+  clearProgress();
+  location.reload();
 });
 
 document.getElementById('btnTryAgain').addEventListener('click', () => {
@@ -1860,9 +1897,15 @@ document.getElementById('btnTryAgain').addEventListener('click', () => {
   state = 'playing';
 });
 
-document.getElementById('btnGiveUp').addEventListener('click', () => {
+document.getElementById('btnGiveUp').addEventListener('click', async () => {
   document.getElementById('retryOverlay').classList.remove('active');
-  showGameOver(false); // send to game over overlay to save score
+  await autoSaveScore();
+  _autoSaved = false;
+  lives = 3;
+  saveLives();
+  totalScore = 0;
+  clearProgress();
+  window.location.href = 'index.html';
 });
 
 document.getElementById('btnWatchAd').addEventListener('click', async () => {
@@ -1890,8 +1933,7 @@ document.getElementById('btnStartOver').addEventListener('click', () => {
   saveLives();
   updateLivesUI();
   totalScore = 0;
-  completedLevels.clear();
-  localStorage.removeItem('watertoss_completed');
+  clearProgress();
   initLevel(1);
   state = 'playing';
 });
@@ -1917,6 +1959,18 @@ function closeSettings() {
 }
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 
+// ── Progress persistence ────────────────────────────────────────
+function saveProgress() {
+  localStorage.setItem('watertoss_total', String(totalScore));
+  // completedLevels and lives are already persisted by their own helpers
+}
+
+function clearProgress() {
+  localStorage.removeItem('watertoss_total');
+  localStorage.removeItem('watertoss_completed');
+  completedLevels.clear();
+}
+
 // ── Boot ───────────────────────────────────────────────────────
 async function boot() {
   playerName = sessionStorage.getItem('playerName') || '';
@@ -1925,7 +1979,10 @@ async function boot() {
   AdManager.init();
   await loadLevels();
   buildLevelList();
-  // Resume from first unbeaten level instead of always starting at 1
+  // Restore saved campaign score if present
+  const savedTotal = parseInt(localStorage.getItem('watertoss_total') || '0', 10);
+  if (savedTotal > 0) totalScore = savedTotal;
+  // Resume from first unbeaten level
   const highestDone = completedLevels.size > 0 ? Math.max(...completedLevels) : 0;
   const startLevel  = Math.min(150, highestDone + 1);
   initLevel(startLevel);

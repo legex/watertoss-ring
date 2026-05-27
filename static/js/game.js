@@ -1438,24 +1438,20 @@ function drawJetStream(side) {
   ctx.restore();
 }
 
+// ── Score formula (mirrors server-side game_config.py) ─────────
+function calculateLevelScore(rings, total, timeRemaining) {
+  const base      = rings * cfg.points_per_ring;
+  const timeBonus = Math.floor(timeRemaining * 5);
+  const perfect   = rings === total ? 500 : 0;
+  return base + timeBonus + perfect;
+}
+
 // ── Level end logic ────────────────────────────────────────────
-async function endLevel(allScored) {
+function endLevel(allScored) {
   state = 'levelEnd';
   clearInterval(timerInterval);
 
-  // Calculate score for this level
-  const res = await fetch('/api/calculate-score', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      level,
-      rings_scored: ringsScored,
-      rings_total:  cfg.rings,
-      time_remaining: timeLeft,
-    }),
-  });
-  const data = await res.json();
-  levelScore = data.score;
+  levelScore = allScored ? calculateLevelScore(ringsScored, cfg.rings, timeLeft) : 0;
   totalScore += levelScore;
 
   document.getElementById('totalScoreDisplay').textContent = totalScore.toLocaleString();

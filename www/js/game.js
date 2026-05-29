@@ -252,12 +252,15 @@ function exitReplay() {
 
 // ── Fetch level configs ────────────────────────────────────────
 async function loadLevels() {
+  // Always start from bundled data so the game works offline / before network responds
+  levelConfigs = BUNDLED_LEVELS;
+  // Background refresh from server (picks up any server-side config updates)
   try {
-    const res = await fetch(API_BASE + '/api/levels');
+    const res = await fetch(API_BASE + '/api/levels', { signal: AbortSignal.timeout(4000) });
     const data = await res.json();
-    levelConfigs = data.levels;
+    if (data.levels) levelConfigs = data.levels;
   } catch (e) {
-    console.error('Failed to load levels', e);
+    // Offline or slow — bundled levels are already set, game continues normally
   }
 }
 

@@ -73,6 +73,12 @@
 </div>
 {% endblock %}
 
+{% block footer %}
+<footer style="text-align:center;padding:24px 20px 40px;color:var(--muted);font-size:0.8rem;">
+  <a href="/privacy" style="color:var(--muted);text-decoration:underline;">Privacy Policy</a>
+</footer>
+{% endblock %}
+
 {% block scripts %}
 <script>
   document.getElementById('playerNameInput').addEventListener('keydown', e => {

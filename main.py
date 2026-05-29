@@ -75,6 +75,11 @@ async def game_page(request: Request):
     )
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return templates.TemplateResponse(request=request, name="privacy.html", context={"request": request})
+
+
 @app.get("/leaderboard", response_class=HTMLResponse)
 async def leaderboard_page(request: Request):
     scores = get_top_scores(20)

@@ -1566,7 +1566,7 @@ function calculateLevelScore(rings, total, timeRemaining) {
 }
 
 // ── Level end logic ────────────────────────────────────────────
-function endLevel(allScored) {
+async function endLevel(allScored) {
   state = 'levelEnd';
   clearInterval(timerInterval);
 

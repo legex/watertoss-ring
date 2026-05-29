@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
-from database import init_db, save_score, get_top_scores, get_score_threshold
+from database import init_db, save_score, get_top_scores, get_score_threshold, clear_all_scores
 from game_config import LEVELS, MAX_LEVEL, calculate_score
 
 
@@ -124,6 +126,16 @@ async def api_scores():
 @app.get("/api/scores/threshold")
 async def api_scores_threshold():
     return get_score_threshold(100)
+
+
+@app.delete("/api/admin/scores")
+async def admin_clear_scores(request: Request):
+    token = request.headers.get("X-Admin-Token", "")
+    expected = os.environ.get("ADMIN_TOKEN", "")
+    if not expected or token != expected:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    clear_all_scores()
+    return {"cleared": True}
 
 
 class ScoreCalcRequest(BaseModel):

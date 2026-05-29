@@ -61,6 +61,14 @@ def get_score_threshold(limit: int = 100):
     return {"top_min": row["score"] if row else 0, "total_count": total}
 
 
+def clear_all_scores():
+    conn = get_db()
+    conn.execute("DELETE FROM high_scores")
+    conn.execute("DELETE FROM sqlite_sequence WHERE name='high_scores'")
+    conn.commit()
+    conn.close()
+
+
 def get_level_top_scores(level: int, limit: int = 5):
     conn = get_db()
     rows = conn.execute(
